@@ -203,6 +203,7 @@ async function fetchJSON(url) {
 
   const desconto = item.desconto ? `<span class="pill">${item.desconto}</span>` : '';
   const cidadeRamo = [item.ramo, item.cidade].filter(Boolean).join(' • ');
+
   const insta = item.instagram ? `<a class="primary" href="${item.instagram}" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a>` : '';
   const zap = item.whatsapp ? `<a href="https://wa.me/55${item.whatsapp.replace(/\D/g, '')}" target="_blank" rel="noopener" aria-label="WhatsApp">WhatsApp</a>` : '';
   const site = item.site ? `<a href="${item.site}" target="_blank" rel="noopener" aria-label="Site">Site</a>` : '';
@@ -211,7 +212,7 @@ async function fetchJSON(url) {
   return `<article class="card" style="background:#fff;border:1px solid #ddd;border-radius:16px;overflow:hidden;padding:12px;display:flex;flex-direction:column">
     <div class="thumb" style="height:140px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #eee">${logo}</div>
     <div class="content" style="display:flex;flex-direction:column;gap:8px">
-      <h2 style="font-size:16px;margin:0">${item.nome || 'Parceiro'}</h2>
+      <h2 style="font-size:16px;margin:0">${item.nome || 'Parceiro sem nome'}</h2>
       <div class="muted" style="color:#555">${cidadeRamo}</div>
       <div class="muted" style="color:#555">${desconto}</div>
       <div class="actions" style="margin-top:auto;display:flex;gap:8px;flex-wrap:wrap">
