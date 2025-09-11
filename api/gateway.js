@@ -2,27 +2,33 @@ export default async function handler(req, res) {
   try {
     const tabela = req.query.tabela;
 
+    // Coloque aqui o ID da base (app...) e o TOKEN (pat...)
+    const BASE_ID = "appMQwMQMQz7dLISZ";
+    const TOKEN = "patXmYwor3EFZGPte.628d2ecfcd251aab41181f5f8f0c601aa042c7195daad22f4178e2c5e0853c67"; // seu token completo
+
+    // Aqui você pode usar os nomes das tabelas exatamente como aparecem no Airtable
     const mapTabelas = {
-      parceiros: process.env.AIRTABLE_PARCEIROS,
-      clientes: process.env.AIRTABLE_CLIENTES,
-      promocoes: process.env.AIRTABLE_PROMOCOES,
-      beneficios: process.env.AIRTABLE_BENEFICIOS,
-      faq: process.env.AIRTABLE_FAQ,
-      depoimentos: process.env.AIRTABLE_DEPOIMENTOS,
-      log: process.env.AIRTABLE_LOG,
+      parceiros: "parceiros",
+      clientes: "clientes",
+      promocoes: "promocoes",
+      beneficios: "beneficios",
+      faq: "faq",
+      depoimentos: "depoimentos",
+      log: "log",
     };
 
-    const tabelaId = mapTabelas[tabela];
-    if (!tabelaId) {
-      throw new Error(`Tabela não mapeada: ${tabela}`);
+    const tabelaNome = mapTabelas[tabela];
+    if (!tabelaNome) {
+      return res.status(400).json({ error: `Tabela não mapeada: ${tabela}` });
     }
 
-    const r = await fetch(
-      `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE}/${tabelaId}`,
-      {
-        headers: { Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}` },
-      }
-    );
+    const url = `https://api.airtable.com/v0/${BASE_ID}/${tabelaNome}?view=Grid%20view`;
+
+    const r = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${TOKEN}`,
+      },
+    });
 
     if (!r.ok) {
       const txt = await r.text();
