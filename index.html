@@ -99,7 +99,7 @@
     }
   </style>
 <link rel="manifest" href="manifest.json" />
-
+<link rel="icon" type="image/png" href="favicon.ico">
 
 </head>
 <body>
@@ -210,170 +210,50 @@ async function fetchJSON(url) {
       </article>`;
     }
 
-async function carregarClientes() {
-  const data = await fetchJSON('/api/gateway?tabela=clientes&pageSize=50');
+async function fetchJSON(url) {
+  const r = await fetch(url, { headers: { Accept: 'application/json' } });
+  const text = await r.text();
+  if (!r.ok) throw new Error(`HTTP ${r.status}: ${text.slice(0,200)}`);
+  return JSON.parse(text);
 }
 
-    async function fetchParceiros(offset) {
-  const p = new URLSearchParams();
-  p.set('pageSize', PAGE_SIZE);
-  if (filtrosAtuais.search) p.set('search', filtrosAtuais.search);
-  if (filtrosAtuais.city) p.set('city', filtrosAtuais.city);
-  if (filtrosAtuais.ramo) p.set('ramo', filtrosAtuais.ramo);
-  if (offset) p.set('offset', offset);
+const API_PATH = "https://script.google.com/macros/s/AKfycbzXZpsNWvfsfjoFRMhOn6SXnBEjnUcU-kcGPhGssr30Gl9TOyRUjQaz3GmVce7iGsBc/exec?tabela=parceiros";
 
-  const fullUrl = `${API_PATH}&${p.toString()}`;
-  const data = await fetchJSON(fullUrl);
-  return {
-    items: (data.records || []).map(p => ({
-      nome: p.fields.nomeFantasia,
-      cidade: p.fields.cidade,
-      ramo: p.fields.ramo,
-      logoUrl: p.fields.logoURL,
-      whatsapp: p.fields.whatsapp,
-      instagram: p.fields.instagram,
-      desconto: p.fields.desconto || ""
-    })),
-    nextOffset: data.offset
-  };
+const elEstado = document.getElementById('estado');
+const elGrid = document.getElementById('grid');
+
+function cardHtml(item) {
+  const logo = item.logoURL
+    ? `<img src="${item.logoURL}" alt="Logo de ${item.nomeFantasia}" style="max-width:80%;max-height:100px;">`
+    : `<img src="logo-aproveitai.png" alt="Logo padrão" style="max-width:80%;max-height:100px;">`;
+
+  return `
+    <article class="card" style="background:#fff;border:1px solid #ddd;border-radius:16px;overflow:hidden;padding:12px;display:flex;flex-direction:column;align-items:center">
+      ${logo}
+      <h2 style="font-size:16px;margin:10px 0 0">${item.nomeFantasia || 'Parceiro'}</h2>
+      <div class="muted" style="color:#555">${item.cidade || ''} • ${item.ramo || ''}</div>
+    </article>`;
 }
-    async function listar(reset) {
-      try {
-        if (reset) {
-          nextOffset = "";
-          elGrid.innerHTML = "";
-          elGrid.hidden = true;
-          elMais.hidden = true;
-          elEstado.hidden = false;
-          elEstado.textContent = "Carregando...";
-        }
-        const data = await fetchParceiros(nextOffset);
-        const items = data.items || [];
-        if (reset && !items.length) {
-          elEstado.textContent = "Nenhum parceiro encontrado.";
-          return;
-        }
-        elEstado.hidden = true;
-        elGrid.hidden = false;
-        elGrid.insertAdjacentHTML("beforeend", items.map(cardHtml).join(""));
-        nextOffset = data.nextOffset || "";
-        elMais.hidden = !nextOffset;
-        if (reset) popularFiltrosFromDom();
-      } catch (e) {
-        console.error(e);
-        elEstado.hidden = false;
-        elEstado.textContent = "Erro ao carregar. Tente novamente mais tarde.";
-      }
-    }
-
-    function popularFiltrosFromDom() {
-      const cs = new Set(), rs = new Set();
-      document.querySelectorAll('#grid .card .muted').forEach(el => {
-        const [ramo, cidade] = (el.textContent || '').split(' • ').map(s => s.trim());
-        if (cidade) cs.add(cidade);
-        if (ramo) rs.add(ramo);
-      });
-      elCidade.innerHTML = ['<option value="">Todas as cidades</option>', ...[...cs].sort().map(c => `<option>${c}</option>`)].join('');
-      elRamo.innerHTML = ['<option value="">Todos os ramos</option>', ...[...rs].sort().map(r => `<option>${r}</option>`)].join('');
-    }
-
-    listar(true);
-
-<!-- index.html (trecho relevante, substituir JS) -->
-
-     buscarBeneficios();
-  async function buscarPromocoes() {
-    const res = await fetch('/api/gateway?tabela=promocoes');
-    const dados = await res.json();
-    console.log('PROMOÇÕES:', dados);
-  }
-
-  buscarPromocoes();
-  async function buscarDepoimentos() {
-    const res = await fetch('/api/gateway?tabela=depoimentos');
-    const dados = await res.json();
-    console.log('DEPOIMENTOS:', dados);
-  }
-
-  buscarDepoimentos();
-
 
 async function carregarParceiros() {
   try {
-    const data = await fetchJSON('/api/gateway?tabela=parceiros&pageSize=50');
-    let records = data.records || [];
-
-    // eliminar duplicatas (baseado no CNPJ)
-    const parceirosUnicos = [];
-    const cnpjsVistos = new Set();
-    records.forEach(parceiro => {
-      const cnpj = parceiro.fields?.cnpj?.trim();
-      if (cnpj && !cnpjsVistos.has(cnpj)) {
-        parceirosUnicos.push(parceiro);
-        cnpjsVistos.add(cnpj);
-      }
-    });
-
-    const container = document.getElementById("lista-parceiros");
-    if (!container) return;
-
-    container.innerHTML = parceirosUnicos.map(p => {
-      const f = p.fields;
-      const logo = f.logoURL || "logo-aproveitai.png"; // fallback padrão
-      return `
-        <div class="parceiro-card" style="border:1px solid #ccc;padding:10px;border-radius:8px;text-align:center;width:180px">
-          <img src="${logo}" alt="${f.nomeFantasia}" style="max-width:100px;margin-bottom:6px"/>
-          <strong>${f.nomeFantasia || 'Sem nome'}</strong><br/>
-          <small>${f.cidade || ''} • ${f.ramo || ''}</small>
-        </div>
-      `;
-    }).join("");
+    elEstado.textContent = "Carregando...";
+    const data = await fetchJSON(API_PATH);
+    const records = data.records || [];
+    if (!records.length) {
+      elEstado.textContent = "Nenhum parceiro encontrado.";
+      return;
+    }
+    elGrid.innerHTML = records.map(r => cardHtml(r.fields)).join('');
+    elEstado.hidden = true;
+    elGrid.hidden = false;
   } catch (e) {
     console.error("Erro ao carregar parceiros:", e.message);
-    const c = document.getElementById("lista-parceiros");
-    if (c) c.innerHTML = `<p style="color:red">Erro ao carregar parceiros.</p>`;
+    elEstado.textContent = "Erro ao carregar parceiros.";
   }
 }
 
 document.addEventListener("DOMContentLoaded", carregarParceiros);
 </script>
-<script>
-  // Service Worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-  }
-
-  // Outras buscas automáticas
-  async function buscarFAQ() {
-    try {
-      const data = await fetchJSON('/api/gateway?tabela=faq');
-      console.log('FAQ:', data);
-    } catch (e) { console.error(e); }
-  }
-
-  async function buscarBeneficios() {
-    const res = await fetch('/api/gateway?tabela=beneficios');
-    const dados = await res.json();
-    console.log('BENEFICIOS:', dados);
-  }
-
-  async function buscarPromocoes() {
-    const res = await fetch('/api/gateway?tabela=promocoes');
-    const dados = await res.json();
-    console.log('PROMOÇÕES:', dados);
-  }
-
-  async function buscarDepoimentos() {
-    const res = await fetch('/api/gateway?tabela=depoimentos');
-    const dados = await res.json();
-    console.log('DEPOIMENTOS:', dados);
-  }
-
-  buscarFAQ();
-  buscarBeneficios();
-  buscarPromocoes();
-  buscarDepoimentos();
-</script>
-
 </body>
 </html>
