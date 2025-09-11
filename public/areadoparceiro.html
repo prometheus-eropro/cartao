@@ -18,10 +18,8 @@
   border-radius: 8px;
   cursor: pointer;
   box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-  z-index: 999;
+  z-index: 99999; /* <- aumentar */
 }
-
-
 
 body, html {
   min-height: 100vh;
@@ -159,7 +157,16 @@ async function entrarPainel() {
     btn.disabled = false; btn.textContent = txt;
   }
 }
+async function validarParceiro(cnpj, token) {
+  const r = await fetch(`/api/gateway?tabela=parceiros&cnpj=${cnpj}&token=${token}`);
+  if (!r.ok) return false;
+  const data = await r.json();
+  return data?.valido === true;
+}
+localStorage.setItem("nomeParceiro", dados.fields.nomeFantasia || dados.fields.parceiro);
+window.location.href = "paineldoparceiro.html";
 </script>
+<button id="voltar-fixo" onclick="window.history.back()">⬅️ Voltar</button>
 </body>
 </html>
 

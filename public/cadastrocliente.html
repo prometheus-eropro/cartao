@@ -149,11 +149,11 @@
     if (dados.celular.length < 10) { alert("Celular inválido."); return; }
 
     try {
-      const resp = await fetch('https://airtable-api-jade.vercel.app/api/clientes', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dados)
-      });
+const resp = await fetch('/api/gateway?tabela=clientes', {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(dados)
+});
       if (!resp.ok) { alert("Erro ao cadastrar."); return; }
 
       document.getElementById("formArea").style.display = "none";
@@ -167,7 +167,6 @@
   });
 </script>
 <button id="voltar-fixo" onclick="window.history.back()">⬅️ Voltar</button>
-
 </body>
 </html>
 

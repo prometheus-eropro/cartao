@@ -24,14 +24,31 @@
   z-index: 999;
 }
 
-
-
-body, html {
-  min-height: 100vh;
+.botoes-acoes {
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
 }
+
+.botoes-acoes .btn {
+  flex: 1 1 180px;
+  max-width: 220px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  color: #fff;
+}
+
+.btn.verde { background: #0a7f2e; }
+.btn.azul { background: #2563eb; }
+.btn.amarelo { background: #fbbf24; color: #000; }
+.btn.vermelho { background: #dc2626; }
+.btn.cinza { background: #0a7f2e; color: #fff; }
 
 .wrap {
   flex-grow: 1;
@@ -156,7 +173,8 @@ body, input, button, textarea {
 
   <div class="wrap">
     <div class="card">
-      <h2 id="boasVindasTitulo">Bem-vindo!</h2>
+<h2 id="bemvindo">Bem-vindo!</h2>
+
       <p class="muted">Obrigado por ser nosso PARCEIRO, você está conectado ao seu painel.</p>
 
       <div id="formulario">
@@ -166,21 +184,13 @@ body, input, button, textarea {
         <div id="resultadoValidacao"></div>
 
       </div>
+<button class="btn verde" onclick="validarCliente()">🔍 Validar Cliente</button>
+<button class="btn azul" onclick="irParaConsultas()">📒 Consultas Recentes</button>
+<button class="btn amarelo" onclick="abrirFormularioPromocao()">🏷️ Promoção</button>
+<button class="btn vermelho" onclick="logout()">⛔ Sair</button>
+<button class="btn cinza" onclick="enviarSugestaoZap()">💬 Enviar Sugestão</button>
 
-      <div id="botoes" class="action-buttons">
-        <button class="verde" onclick="consultarCliente()">🔍 Validar Cliente</button>
-        <button class="azul" onclick="irParaConsultas()">📘 Consultas Recentes</button>
-        <a class="btn amarelo" href="criarpromocao.html" target="_blank">🎉 Criar Promoção</a>
-        <button class="btn vermelho" onclick="logout()">Sair</button>
-        <button class="rosa">💡 Enviar Sugestão</button>
-      </div>
-    </div>
-  </div>
-<form id="formSugestao">
-<textarea id="sugestaoTexto" placeholder="Digite sua sugestão..."></textarea>
-<button type="submit">Enviar Sugestão</button>
-</form>
-
+   </div>
 <script>
 
 const nome = sessionStorage.getItem("nomeParceiro");
@@ -197,22 +207,19 @@ if (!nome || !cnpj) {
 async function consultarCliente() {
   const valor = document.getElementById('cpfOuId').value.trim();
   const box = document.getElementById('resultadoValidacao');
-  if (!valor){ box.className='invalido'; box.innerHTML='⚠️ Informe o CPF ou ID.'; return; }
+  if (!valor){ 
+    box.className='invalido'; 
+    box.innerHTML='⚠️ Informe o CPF ou ID.'; 
+    return; 
+  }
 
   try {
-    // 1) Valida cliente
-fetch('/api/gateway?tabela=parceiros')
-
-fetch('/api/gateway?tabela=clientes')
-
-fetch('/api/gateway?tabela=promocoes')
-
-
-, {
+    const r = await fetch('/api/gateway?tabela=clientes', {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ cpfOuId: valor })
     });
+
     const data = await r.json();
     if (!r.ok || !data?.cliente){ throw new Error("nao_encontrado"); }
 
@@ -228,7 +235,6 @@ fetch('/api/gateway?tabela=promocoes')
       const codigo = gerarCodigoAutorizacao();
       box.className='validado';
       box.innerHTML = `✅ <strong>${nome}</strong><br>ID: ${idPublico}<br>CPF: ${cpfMask}<br>Data/Hora: ${agora}<br><strong>Código: ${codigo}</strong>`;
-      // 2) Log no backend
       await fetch("/api/logvalidacao",{
         method:"POST",
         headers:{ "Content-Type":"application/json" },
@@ -246,14 +252,8 @@ fetch('/api/gateway?tabela=promocoes')
   } catch(e){
     box.className='invalido';
     box.innerHTML = '❌ Cliente inválido ou não cadastrado.';
-    await fetch("/api/logvalidacao",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ statusCliente:'erro', nomeCliente:'Desconhecido', codigoAutorizacao:'---', idPublico: valor, log_erros:'NAO_ENCONTRADO' })
-    });
   }
 }
-
 function getParceiro() {
   return {
     nome: sessionStorage.getItem('nomeParceiro') || 'Desconhecido',
@@ -326,9 +326,45 @@ const parceiro = parceiros.find(p => p.idPublico?.toUpperCase() === id?.toUpperC
   document.getElementById("cidade").textContent = parceiro.cidade || "";
 })();
 </script>
+<script>
+function abrirFormularioPromocao() {
+  const parceiro = {
+    nome: sessionStorage.getItem("nomeParceiro") || "Desconhecido",
+    cnpj: sessionStorage.getItem("cnpjParceiro") || "",
+    idPublico: sessionStorage.getItem("idPublico") || ""
+  };
 
+  const mensagemZap = `Olá! Uma nova promoção foi criada no painel.\n\n📌 Parceiro: ${parceiro.nome}\n🧾 CNPJ: ${parceiro.cnpj}\n🔐 ID Público: ${parceiro.idPublico}\n\n⚠️ Ativação pendente.`;
+  const linkZap = `https://wa.me/5528999692303?text=${encodeURIComponent(mensagemZap)}`;
 
+  // Abrir WhatsApp
+  window.open(linkZap, "_blank");
+
+  // Abrir formulário (ou redirecionar para formulário no HTML)
+  window.location.href = "criar-promocao.html"; // Crie essa página se quiser formulário separado
+}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const nome = sessionStorage.getItem("nomeParceiro") || "PARCEIRO";
+  document.getElementById("bemvindo").innerHTML = `Bem-vindo, <strong>${nome}</strong>!`;
+});
+
+<script>
+function enviarSugestaoZap() {
+  const nome = sessionStorage.getItem("nomeParceiro") || "PARCEIRO";
+  const mensagem = prompt("Digite sua sugestão:");
+  if (!mensagem) return;
+
+  const zap = `https://wa.me/5528999692303?text=Olá! Aqui é o parceiro ${encodeURIComponent(nome)}. Tenho uma sugestão:%0A${encodeURIComponent(mensagem)}`;
+  window.open(zap, '_blank');
+}
+</script>
+</script>
 <button id="voltar-fixo" onclick="window.history.back()">⬅️ Voltar</button>
+</body>
+
 </body>
 </html>
 

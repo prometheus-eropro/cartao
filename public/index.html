@@ -198,8 +198,8 @@ async function fetchJSON(url) {
     }
 
     function cardHtml(item) {
-      const logo = item.logoUrl
-  ? `<img src="${item.logoUrl}" alt="Logo de ${item.nome}" style="max-width:80%;max-height:100px;">`
+const logo = item.logoURL
+  ? `<img src="${item.logoURL}" alt="Logo de ${item.nome}" style="max-width:80%;max-height:100px;">`
   : `<img src="logo-aproveitai.png" alt="Logo padrão" style="max-width:80%;max-height:100px;">`;
 
       const desconto = item.desconto ? `<span class="pill">${item.desconto}</span>` : '';
