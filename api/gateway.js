@@ -1,21 +1,33 @@
-// api/gateway.js
 export default async function handler(req, res) {
-  const { tabela } = req.query;
+  const tabela = req.query.tabela;
 
-  if (!tabela) {
-    return res.status(400).json({ erro: 'Tabela não especificada' });
-  }
-
-  // Exemplo usando Airtable
-  const AIRTABLE_KEY = process.env.AIRTABLE_KEY;
-  const BASE_ID = process.env.AIRTABLE_BASE_ID;
-
-  const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${tabela}`, {
+  const r = await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE}/${tabela}`, {
     headers: {
-      Authorization: `Bearer ${AIRTABLE_KEY}`
-    }
+      Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}`, // ⚠️ Token seguro
+    },
   });
 
-  const data = await response.json();
-  return res.status(200).json(data);
+  const json = await r.json();
+  res.status(200).json(json);
+}
+export default async function handler(req, res) {
+  const tabela = req.query.tabela;
+
+  // Se for "parceiros", troca pelo ID real da tabela
+  const tableId = (tabela === "parceiros") 
+    ? process.env.AIRTABLE_PARCEIROS 
+    : tabela;
+
+  const r = await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE}/${tableId}`, {
+    headers: {
+      Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}`,
+    },
+  });
+
+  const json = await r.json();
+  if (json.error) {
+    res.status(400).json(json);
+  } else {
+    res.status(200).json(json);
+  }
 }
