@@ -1,33 +1,35 @@
 export default async function handler(req, res) {
-  const tabela = req.query.tabela;
+  try {
+    const tabela = req.query.tabela;
 
-  const r = await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE}/${tabela}`, {
-    headers: {
-      Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}`, // ⚠️ Token seguro
-    },
-  });
+    // Mapear tabelas para seus IDs reais
+    const mapTabelas = {
+      parceiros: process.env.AIRTABLE_PARCEIROS,
+      clientes: process.env.AIRTABLE_CLIENTES,
+      promocoes: process.env.AIRTABLE_PROMOCOES,
+      beneficios: process.env.AIRTABLE_BENEFICIOS,
+    };
 
-  const json = await r.json();
-  res.status(200).json(json);
-}
-export default async function handler(req, res) {
-  const tabela = req.query.tabela;
+    const tabelaId = mapTabelas[tabela] || tabela;
 
-  // Se for "parceiros", troca pelo ID real da tabela
-  const tableId = (tabela === "parceiros") 
-    ? process.env.AIRTABLE_PARCEIROS 
-    : tabela;
+    const r = await fetch(
+      `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE}/${tabelaId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}`,
+        },
+      }
+    );
 
-  const r = await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE}/${tableId}`, {
-    headers: {
-      Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}`,
-    },
-  });
+    if (!r.ok) {
+      const txt = await r.text();
+      throw new Error(`Airtable erro ${r.status}: ${txt}`);
+    }
 
-  const json = await r.json();
-  if (json.error) {
-    res.status(400).json(json);
-  } else {
+    const json = await r.json();
     res.status(200).json(json);
+  } catch (err) {
+    console.error("Erro no gateway:", err.message);
+    res.status(500).json({ error: err.message });
   }
 }
