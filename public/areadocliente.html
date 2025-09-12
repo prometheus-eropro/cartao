@@ -156,7 +156,8 @@ body, html {
     carregando.style.display = "block";
 
     // ID público que você gera no cadastro: APV-XXXXX
-    const regex = /^APV-[A-Z0-9]{5}$/;
+    const regex = /^APV-[A-Z0-9\-]{5,15}$/;
+
     if (!regex.test(valor)) {
       erro.textContent = 'Formato inválido. Use: APV-XXXXX';
       erro.style.display = 'block';

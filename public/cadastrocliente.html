@@ -5,6 +5,22 @@
   <title>Cadastro Cliente - Cartão AproveitAI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
+
+#voltar-fixo {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  padding: 12px 24px;
+  font-size: 16px;
+  background-color: #0a7f2e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+</style>
+
+<style>
+
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(to bottom, #cceeff, #a3d8ff);
@@ -22,25 +38,25 @@
     }
 
     header img {
-      height: 80px;
-      margin: 0 20px;
+      height: 130px;
+      margin: 0 10px;
     }
 
     header h1 {
       background-color: #dfffe8;
       color: #007a33;
       display: inline-block;
-      padding: 10px 25px;
-      border-radius: 20px;
-      font-size: 1.5em;
+      padding: 30px 25px;
+      border-radius: 40px;
+      font-size: 2.5em;
     }
 
     .box {
       background: white;
-      padding: 30px;
-      border-radius: 15px;
+      padding: 60px;
+      border-radius: 25px;
       box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
-      margin: 20px 0;
+      margin: 50px 0;
       width: 90%;
       max-width: 450px;
     }
@@ -84,20 +100,7 @@
       font-weight: bold;
     }
 
-#voltar-fixo {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  padding: 12px 24px;
-  font-size: 16px;
-  background-color: #0a7f2e;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-  z-index: 999;
-}  </style>
+  </style>
 </head>
 <body>
 
@@ -154,7 +157,11 @@ const resp = await fetch('/api/gateway?tabela=clientes', {
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify(dados)
 });
-      if (!resp.ok) { alert("Erro ao cadastrar."); return; }
+const result = await resp.json();
+if (!resp.ok || !result.id) { 
+  alert("Erro ao cadastrar. Verifique os dados."); 
+  return; 
+}
 
       document.getElementById("formArea").style.display = "none";
       document.getElementById("sucessoArea").style.display = "block";
@@ -166,12 +173,7 @@ const resp = await fetch('/api/gateway?tabela=clientes', {
     }
   });
 </script>
-<button id="voltar-fixo" onclick="window.history.back()">⬅️ Voltar</button>
+
+<button id="voltar-fixo" onclick="window.history.back()">⏴ Voltar</button>
 </body>
 </html>
-
-
-
-
-
-
