@@ -31,6 +31,7 @@ export default async function handler(req, res) {
       const json = await r.json();
       return res.status(200).json(json);
     }
+console.log("🔎 Dados recebidos no POST:", body);
 
     if (req.method === "POST") {
       const body = req.body;
@@ -62,3 +63,31 @@ export default async function handler(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
+
+
+
+
+
+
+
+
+
+const salvar = await fetch(urlBase, {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${TOKEN}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    fields: {
+      nome: "Teste Edgar",
+      cpf: "12345678900",
+      dataNascimento: "1980-01-01",
+      celular: "28999887766",
+      grupo: "INDIVIDUAL",
+      cidade: "Guaçuí/ES",
+      ativo: "NÃO",
+      idPublico: "APV-TESTE"
+    }
+  }),
+});
